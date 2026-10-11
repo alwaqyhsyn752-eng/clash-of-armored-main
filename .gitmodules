@@ -1,0 +1,6 @@
+[submodule "clash-core"]
+	path = clash-core
+	url = https://github.com/alwaqyhsyn752-eng/clash-core.git
+[submodule "clash-cache"]
+	path = clash-cache
+	url = https://github.com/alwaqyhsyn752-eng/clash-cache.git
