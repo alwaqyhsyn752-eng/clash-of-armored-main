@@ -11,10 +11,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout main repository
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
+
+      - name: Clone submodules manually
+        run: |
+          rm -rf clash-ui clash-core clash-cache
+          git clone https://github.com/alwaqyhsyn752-eng/clash-ui.git clash-ui
+          git clone https://github.com/alwaqyhsyn752-eng/clash-core.git clash-core
+          git clone https://github.com/alwaqyhsyn752-eng/clash-cache.git clash-cache
+          echo "=== clash-ui ===" && ls -la clash-ui
+          echo "=== clash-core ===" && ls -la clash-core
+          echo "=== clash-cache ===" && ls -la clash-cache
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -47,6 +55,8 @@ jobs:
           cp -r clash-cache/src/* www/cache/ || true
           sed -i 's|\.\./clash-cache/|../cache/|g' www/game/index.html
           sed -i 's|\.\./clash-ui/|../|g' www/game/index.html
+          echo "=== www tree ==="
+          find www -type f | sort
 
       - name: Sync Capacitor
         run: npx cap sync android
