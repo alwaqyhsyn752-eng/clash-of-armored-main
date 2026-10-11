@@ -20,9 +20,6 @@ jobs:
           git clone https://github.com/alwaqyhsyn752-eng/clash-ui.git clash-ui
           git clone https://github.com/alwaqyhsyn752-eng/clash-core.git clash-core
           git clone https://github.com/alwaqyhsyn752-eng/clash-cache.git clash-cache
-          echo "=== clash-ui contents ===" && ls -la clash-ui
-          echo "=== clash-core contents ===" && ls -la clash-core
-          echo "=== clash-cache contents ===" && ls -la clash-cache
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -47,39 +44,30 @@ jobs:
         run: |
           rm -rf www
           mkdir -p www/game www/cache www/styles www/scripts www/assets
-
-          # ---- clash-ui → www root ----
           cp clash-ui/index.html    www/index.html
           cp clash-ui/settings.html www/settings.html || true
           cp -r clash-ui/styles/*   www/styles/  || true
           cp -r clash-ui/scripts/*  www/scripts/ || true
           cp -r clash-ui/assets/*   www/assets/  || true
-
-          # ---- clash-core → www/game ----
-          cp clash-core/index.html www/game/index.html
-          cp -r clash-core/config  www/game/ || true
-          cp -r clash-core/src     www/game/ || true
-
-          # ---- clash-cache → www/cache ----
-          cp -r clash-cache/src/*  www/cache/ || true
-
-          # ---- إصلاح المسارات النسبية ----
+          cp clash-core/index.html  www/game/index.html
+          cp -r clash-core/config   www/game/ || true
+          cp -r clash-core/src      www/game/ || true
+          cp -r clash-cache/src/*   www/cache/ || true
           sed -i 's|\.\./clash-cache/|../cache/|g' www/game/index.html || true
           sed -i 's|\.\./clash-ui/|../|g'          www/game/index.html || true
           sed -i 's|\.\./clash-cache/|../cache/|g' www/index.html      || true
           sed -i 's|\.\./clash-ui/|../|g'          www/index.html      || true
-
-          # ---- التحقق النهائي ----
           echo "======== www tree ========"
           find www -type f | sort
           echo "======== critical files ========"
-          test -f www/index.html            && echo "✅ www/index.html"
-          test -f www/scripts/app.js        && echo "✅ www/scripts/app.js"
-          test -f www/scripts/audio-manager.js && echo "✅ www/scripts/audio-manager.js"
-          test -f www/styles/modern.css     && echo "✅ www/styles/modern.css"
-          test -f www/game/index.html       && echo "✅ www/game/index.html"
-          test -f www/game/src/game.js      && echo "✅ www/game/src/game.js"
-          test -f www/cache/cache.js        && echo "✅ www/cache/cache.js"
+          test -f www/index.html                && echo "OK www/index.html"
+          test -f www/scripts/app.js            && echo "OK www/scripts/app.js"
+          test -f www/scripts/auth.js           && echo "OK www/scripts/auth.js"
+          test -f www/scripts/audio-manager.js  && echo "OK www/scripts/audio-manager.js"
+          test -f www/styles/auth.css           && echo "OK www/styles/auth.css"
+          test -f www/styles/modern.css         && echo "OK www/styles/modern.css"
+          test -f www/cache/profile-manager.js  && echo "OK www/cache/profile-manager.js"
+          test -f www/game/index.html           && echo "OK www/game/index.html"
 
       - name: Add Android platform
         run: npx cap add android
