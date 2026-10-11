@@ -1,5 +1,4 @@
-name: Build Android APK
-
+name: Build APK
 on:
   push:
     branches: [ main ]
@@ -7,50 +6,40 @@ on:
 
 jobs:
   build:
-    name: Build APK
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout main repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Clone submodules manually
+      - name: Clone submodules
         run: |
           rm -rf clash-ui clash-core clash-cache
           git clone https://github.com/alwaqyhsyn752-eng/clash-ui.git clash-ui
           git clone https://github.com/alwaqyhsyn752-eng/clash-core.git clash-core
           git clone https://github.com/alwaqyhsyn752-eng/clash-cache.git clash-cache
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
 
-      - name: Setup Java 21
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v4
+      - uses: android-actions/setup-android@v4
         with:
           packages: 'platform-tools'
 
-      - name: Install npm dependencies
-        run: npm install
+      - run: npm install
 
-      - name: Build www folder
+      - name: Build www
         run: |
           set -e
           rm -rf www
-          mkdir -p www/game www/cache www/styles www/scripts www/assets
+          mkdir -p www/game www/cache www/styles www/scripts
 
           cp clash-ui/index.html    www/index.html
-          cp clash-ui/settings.html www/settings.html
           cp -r clash-ui/styles/*   www/styles/
           cp -r clash-ui/scripts/*  www/scripts/
-          if [ -d clash-ui/assets ]; then cp -r clash-ui/assets/* www/assets/ ; fi
 
           cp clash-core/index.html  www/game/index.html
           cp -r clash-core/config   www/game/
@@ -58,58 +47,23 @@ jobs:
 
           cp -r clash-cache/src/*   www/cache/
 
-          sed -i 's|\.\./clash-cache/src/|cache/|g'     www/index.html
-          sed -i 's|\.\./clash-cache/|cache/|g'         www/index.html
-          sed -i 's|\.\./clash-cache/src/|../cache/|g'  www/game/index.html
-          sed -i 's|\.\./clash-cache/|../cache/|g'      www/game/index.html
-          sed -i 's|\.\./clash-ui/|../|g'               www/game/index.html
+          sed -i 's|\.\./clash-cache/src/|../cache/|g' www/game/index.html
+          sed -i 's|\.\./clash-cache/|../cache/|g'     www/game/index.html
+          sed -i 's|\.\./clash-ui/|../|g'              www/game/index.html
 
-          echo "======== www/index.html script tags ========"
-          grep -n "script src" www/index.html
+          echo "=== checks ==="
+          test -f www/index.html    && echo "OK index.html"
+          test -f www/game/index.html && echo "OK game"
 
-          echo "======== www/game/index.html script tags ========"
-          grep -n "script src" www/game/index.html
+      - run: npx cap add android
+      - run: npx cap sync android
+      - run: chmod +x android/gradlew
 
-          echo "======== actual files on disk ========"
-          find www -type f | sort
-
-          echo "======== critical checks ========"
-          test -f www/index.html               && echo "OK www/index.html"
-          test -f www/cache/cache.js           && echo "OK www/cache/cache.js"
-          test -f www/cache/profile-manager.js && echo "OK www/cache/profile-manager.js"
-          test -f www/cache/save-system.js     && echo "OK www/cache/save-system.js"
-          test -f www/scripts/app.js           && echo "OK www/scripts/app.js"
-          test -f www/scripts/auth.js          && echo "OK www/scripts/auth.js"
-          test -f www/scripts/audio-manager.js && echo "OK www/scripts/audio-manager.js"
-          test -f www/styles/modern.css        && echo "OK www/styles/modern.css"
-          test -f www/styles/auth.css          && echo "OK www/styles/auth.css"
-          test -f www/game/index.html          && echo "OK www/game/index.html"
-          test -f www/game/src/game.js         && echo "OK www/game/src/game.js"
-
-      - name: Add Android platform
-        run: npx cap add android
-
-      - name: Sync Capacitor
-        run: npx cap sync android
-
-      - name: Verify android assets
-        run: |
-          echo "======== android public dir ========"
-          ls -la android/app/src/main/assets/public/ || true
-          echo "======== android public/cache ========"
-          ls -la android/app/src/main/assets/public/cache/ || true
-          echo "======== android public/scripts ========"
-          ls -la android/app/src/main/assets/public/scripts/ || true
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x android/gradlew
-
-      - name: Build Debug APK
+      - name: Build APK
         working-directory: ./android
         run: ./gradlew assembleDebug --no-daemon
 
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: clash-of-armored-apk
           path: android/app/build/outputs/apk/debug/*.apk
