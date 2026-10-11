@@ -1,0 +1,10 @@
+node_modules/
+android/
+www/
+.gradle/
+build/
+*.apk
+*.aab
+*.keystore
+*.jks
+.env

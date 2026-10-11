@@ -1,0 +1,20 @@
+{
+  "appId": "com.alwaqyhsyn.clashofarmored",
+  "appName": "Clash of Armored",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#0d0d0d",
+      "showSpinner": false
+    }
+  }
+}
